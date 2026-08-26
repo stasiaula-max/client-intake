@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Intake — CV Details</title>
+<style>
+  :root{
+    --navy:#0b2540;
+    --navy-deep:#071a2e;
+    --teal:#1a8f8a;
+    --teal-light:#e6f4f3;
+    --paper:#f6f5f1;
+    --ink:#1c2530;
+    --muted:#6b7685;
+    --line:#dfe3e8;
+    --error:#c0392b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Roboto,-apple-system,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    padding-bottom:60px;
+  }
+  header{
+    background:var(--navy);
+    background-image:linear-gradient(135deg,var(--navy) 0%,var(--navy-deep) 100%);
+    color:#fff;
+    padding:36px 20px 30px;
+    text-align:center;
+    border-bottom:4px solid var(--teal);
+  }
+  header .eyebrow{
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:var(--teal);
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  header h1{margin:0;font-size:26px;font-weight:700;}
+  header p{margin:8px auto 0;max-width:520px;font-size:14px;color:#c7d2df;line-height:1.5;}
+
+  form{max-width:640px;margin:28px auto;padding:0 18px;}
+
+  .section{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px 20px;
+    margin-bottom:18px;
+  }
+  .section h2{
+    font-size:15px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--navy);
+    margin:0 0 4px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section h2 .num{
+    background:var(--teal);
+    color:#fff;
+    width:22px;height:22px;
+    border-radius:50%;
+    font-size:12px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+  }
+  .section .hint{font-size:12.5px;color:var(--muted);margin:0 0 16px;}
+
+  label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    margin:14px 0 6px;
+    color:var(--ink);
+  }
+  label .req{color:var(--error);margin-left:2px;}
+  label .opt{color:var(--muted);font-weight:400;font-size:11.5px;}
+
+  input[type=text],input[type=email],input[type=tel],input[type=url],
+  input[type=month],select,textarea{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    font-size:14px;
+    font-family:inherit;
+    background:#fff;
+    color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{
+    outline:2px solid var(--teal);
+    outline-offset:1px;
+    border-color:var(--teal);
+  }
+  textarea{resize:vertical;min-height:80px;}
+
+  .file-drop{
+    border:1.5px dashed var(--line);
+    border-radius:7px;
+    padding:16px;
+    text-align:center;
+    background:var(--teal-light);
+    cursor:pointer;
+  }
+  .file-drop input{display:none;}
+  .file-drop .label{font-size:13px;color:var(--navy);font-weight:600;}
+  .file-drop .sub{font-size:11.5px;color:var(--muted);margin-top:3px;}
+  .file-list{margin-top:8px;font-size:12.5px;color:var(--ink);}
+  .file-list div{padding:4px 0;border-bottom:1px dashed var(--line);}
+
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--teal-light);
+    padding:12px 14px;
+    border-radius:7px;
+    margin-top:14px;
+  }
+  .toggle-row span{font-size:13px;font-weight:600;color:var(--navy);}
+  .switch{position:relative;display:inline-block;width:44px;height:24px;}
+  .switch input{opacity:0;width:0;height:0;}
+  .slider{
+    position:absolute;cursor:pointer;inset:0;
+    background:#c7cdd4;border-radius:24px;transition:.2s;
+  }
+  .slider:before{
+    content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;
+    background:#fff;border-radius:50%;transition:.2s;
+  }
+  .switch input:checked + .slider{background:var(--teal);}
+  .switch input:checked + .slider:before{transform:translateX(20px);}
+
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:520px){.row2{grid-template-columns:1fr;}}
+
+  .job-block{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:16px;
+    margin-top:14px;
+    position:relative;
+    background:#fbfbfa;
+  }
+  .job-block .remove-job{
+    position:absolute;top:10px;right:10px;
+    background:none;border:none;color:var(--error);
+    font-size:12px;cursor:pointer;font-weight:600;
+  }
+  .add-job-btn{
+    margin-top:14px;
+    width:100%;
+    padding:11px;
+    border:1.5px dashed var(--teal);
+    background:#fff;
+    color:var(--teal);
+    font-weight:700;
+    font-size:13.5px;
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .add-job-btn:hover{background:var(--teal-light);}
+
+  .submit-btn{
+    width:100%;
+    padding:15px;
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:.02em;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  .submit-btn:hover{background:var(--navy-deep);}
+  .submit-btn:disabled{background:#9aa5b1;cursor:not-allowed;}
+
+  #statusMsg{
+    max-width:640px;margin:0 auto 18px;padding:0 18px;
+    font-size:13.5px;text-align:center;
+  }
+  #statusMsg.error{color:var(--error);}
+  #statusMsg.success{color:#1a7a44;}
+
+  .field-error{color:var(--error);font-size:12px;margin-top:4px;display:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Client Intake Form</div>
+  <h1>Let's Build Your CV</h1>
+  <p>Fill in your details below. Everything you submit goes straight into our system so we can put together a professional CV for you.</p>
+</header>
+
+<div id="statusMsg"></div>
+
+<form id="cvForm">
+
+  <!-- 1. Personal Details -->
+  <div class="section">
+    <h2><span class="num">1</span> Personal Details</h2>
+    <p class="hint">Your basic contact and profile information.</p>
+
+    <label>Full Name <span class="req">*</span></label>
+    <input type="text" name="fullName" required>
+
+    <label>Location / City &amp; Country <span class="req">*</span></label>
+    <input type="text" name="location" placeholder="e.g. Abu Dhabi, UAE" required>
+
+    <div class="row2">
+      <div>
+        <label>Email Address <span class="req">*</span></label>
+        <input type="email" name="email" required>
+      </div>
+      <div>
+        <label>Phone / WhatsApp Number <span class="req">*</span></label>
+        <input type="tel" name="phone" placeholder="+971 5X XXX XXXX" required>
+      </div>
+    </div>
+
+    <label>Languages Spoken <span class="opt">(optional)</span></label>
+    <input type="text" name="languages" placeholder="e.g. English, Swahili, Arabic">
+
+    <label>Target Job Role <span class="req">*</span></label>
+    <input type="text" name="targetRole" placeholder="e.g. HSE Officer" required>
+
+    <label>Visa Status <span class="opt">(optional)</span></label>
+    <select name="visaStatus">
+      <option value="">— Select —</option>
+      <option>Visit Visa</option>
+      <option>Employment Visa</option>
+      <option>Cancelled Visa</option>
+      <option>Freelance Visa</option>
+      <option>Golden Visa</option>
+      <option>Resident</option>
+    </select>
+
+    <label>LinkedIn Profile Link <span class="opt">(optional)</span></label>
+    <input type="url" name="linkedIn" placeholder="https://linkedin.com/in/...">
+
+    <label>Passport Photo <span class="opt">(optional, images only)</span></label>
+    <div class="file-drop" id="passportDrop">
+      <div class="label">Tap to upload photo</div>
+      <div class="sub">JPG or PNG</div>
+      <input type="file" id="passportPhoto" accept="image/*">
+    </div>
+    <div class="file-list" id="passportFileList"></div>
+  </div>
+
+  <!-- 2. Qualifications -->
+  <div class="section">
+    <h2><span class="num">2</span> Qualifications &amp; Certificates</h2>
+    <p class="hint">Your education background and supporting documents.</p>
+
+    <label>Education History <span class="opt">(optional)</span></label>
+    <textarea name="education" placeholder="Degree/Diploma, College Name, Graduation Year"></textarea>
+
+    <label>Certificates &amp; Documents <span class="opt">(optional — multiple files allowed)</span></label>
+    <div class="file-drop" id="certsDrop">
+      <div class="label">Tap to upload documents</div>
+      <div class="sub">PDF, JPG or PNG — you can select several at once</div>
+      <input type="file" id="certificates" accept=".pdf,image/*" multiple>
+    </div>
+    <div class="file-list" id="certsFileList"></div>
+  </div>
+
+  <!-- 3. Current Work -->
+  <div class="section">
+    <h2><span class="num">3</span> Current Work Experience</h2>
+
+    <label>Company &amp; Location</label>
+    <input type="text" name="currentCompany">
+
+    <label>Job Title</label>
+    <input type="text" name="currentRole">
+
+    <label>Project Name</label>
+    <input type="text" name="currentProject">
+
+    <label>Start Date</label>
+    <input type="month" name="currentStart">
+
+    <div class="toggle-row">
+      <span>This is my current role</span>
+      <label class="switch">
+        <input type="checkbox" id="isCurrentRole" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div id="currentEndWrap" style="display:none;">
+      <label>End Date</label>
+      <input type="month" name="currentEnd">
+    </div>
+  </div>
+
+  <!-- 4. Previous Work -->
+  <div class="section">
+    <h2><span class="num">4</span> Previous Work Experience</h2>
+    <p class="hint">Add as many previous roles as you need.</p>
+    <div id="jobsContainer"></div>
+    <button type="button" class="add-job-btn" id="addJobBtn">+ Add Another Job</button>
+  </div>
+
+  <button type="submit" class="submit-btn" id="submitBtn">Submit My Details</button>
+</form>
+
+<script>
+  // ====== CONFIG — paste your deployed Apps Script Web App URL here ======
+  var SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+  var MAX_FILE_MB = 15;
+
+  var form = document.getElementById('cvForm');
+  var statusMsg = document.getElementById('statusMsg');
+  var submitBtn = document.getElementById('submitBtn');
+  var jobsContainer = document.getElementById('jobsContainer');
+  var jobCount = 0;
+
+  // ---- current role toggle ----
+  var currentToggle = document.getElementById('isCurrentRole');
+  var currentEndWrap = document.getElementById('currentEndWrap');
+  function syncToggle(){ currentEndWrap.style.display = currentToggle.checked ? 'none' : 'block'; }
+  currentToggle.addEventListener('change', syncToggle);
+  syncToggle();
+
+  // ---- file upload UI wiring ----
+  function wireDrop(dropId, inputId, listId){
+    var drop = document.getElementById(dropId);
+    var input = document.getElementById(inputId);
+    var list = document.getElementById(listId);
+    drop.addEventListener('click', function(){ input.click(); });
+    input.addEventListener('change', function(){
+      list.innerHTML = '';
+      Array.prototype.forEach.call(input.files, function(f){
+        var mb = (f.size / (1024*1024)).toFixed(2);
+        var div = document.createElement('div');
+        div.textContent = f.name + ' (' + mb + ' MB)' + (f.size > MAX_FILE_MB*1024*1024 ? ' — too large!' : '');
+        if(f.size > MAX_FILE_MB*1024*1024) div.style.color = '#c0392b';
+        list.appendChild(div);
+      });
+    });
+  }
+  wireDrop('passportDrop','passportPhoto','passportFileList');
+  wireDrop('certsDrop','certificates','certsFileList');
+
+  // ---- repeatable previous jobs ----
+  function addJobBlock(){
+    jobCount++;
+    var id = jobCount;
+    var block = document.createElement('div');
+    block.className = 'job-block';
+    block.dataset.jobId = id;
+    block.innerHTML =
+      '<button type="button" class="remove-job">Remove</button>' +
+      '<label>Company &amp; Location</label>' +
+      '<input type="text" class="job-company">' +
+      '<label>Job Title</label>' +
+      '<input type="text" class="job-role">' +
+      '<label>Project Name</label>' +
+      '<input type="text" class="job-project">' +
+      '<div class="row2">' +
+        '<div><label>Start Date</label><input type="month" class="job-start"></div>' +
+        '<div><label>End Date</label><input type="month" class="job-end"></div>' +
+      '</div>';
+    block.querySelector('.remove-job').addEventListener('click', function(){ block.remove(); });
+    jobsContainer.appendChild(block);
+  }
+  document.getElementById('addJobBtn').addEventListener('click', addJobBlock);
+  addJobBlock(); // start with one visible
+
+  // ---- helpers ----
+  function fileToBase64(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(){ resolve({ name:file.name, type:file.type, data:reader.result }); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function setStatus(msg, cls){
+    statusMsg.textContent = msg;
+    statusMsg.className = cls || '';
+  }
+
+  // ---- submit ----
+  form.addEventListener('submit', async function(ev){
+    ev.preventDefault();
+    setStatus('');
+
+    var fd = new FormData(form);
+    var payload = {
+      fullName: fd.get('fullName').trim(),
+      location: fd.get('location').trim(),
+      email: fd.get('email').trim(),
+      phone: fd.get('phone').trim(),
+      languages: fd.get('languages') || '',
+      targetRole: fd.get('targetRole').trim(),
+      visaStatus: fd.get('visaStatus') || '',
+      linkedIn: fd.get('linkedIn') || '',
+      education: fd.get('education') || '',
+      currentCompany: fd.get('currentCompany') || '',
+      currentRole: fd.get('currentRole') || '',
+      currentProject: fd.get('currentProject') || '',
+      currentStart: fd.get('currentStart') || '',
+      currentEnd: fd.get('currentEnd') || '',
+      isCurrentRole: currentToggle.checked
+    };
+
+    if(!payload.fullName || !payload.location || !payload.email || !payload.phone || !payload.targetRole){
+      setStatus('Please fill in all required fields marked with *.', 'error');
+      return;
+    }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)){
+      setStatus('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    try {
+      // passport photo
+      var passportInput = document.getElementById('passportPhoto');
+      if(passportInput.files.length){
+        if(passportInput.files[0].size > MAX_FILE_MB*1024*1024) throw new Error('Passport photo is too large (max ' + MAX_FILE_MB + 'MB).');
+        payload.passportPhoto = await fileToBase64(passportInput.files[0]);
+      }
+
+      // certificates
+      var certsInput = document.getElementById('certificates');
+      if(certsInput.files.length){
+        var certPromises = [];
+        for(var i=0;i<certsInput.files.length;i++){
+          if(certsInput.files[i].size > MAX_FILE_MB*1024*1024) throw new Error('"' + certsInput.files[i].name + '" is too large (max ' + MAX_FILE_MB + 'MB).');
+          certPromises.push(fileToBase64(certsInput.files[i]));
+        }
+        payload.certificates = await Promise.all(certPromises);
+      }
+
+      // previous jobs
+      var jobBlocks = jobsContainer.querySelectorAll('.job-block');
+      payload.previousJobs = Array.prototype.map.call(jobBlocks, function(b){
+        return {
+          company: b.querySelector('.job-company').value || '',
+          role: b.querySelector('.job-role').value || '',
+          project: b.querySelector('.job-project').value || '',
+          startDate: b.querySelector('.job-start').value || '',
+          endDate: b.querySelector('.job-end').value || ''
+        };
+      }).filter(function(j){ return j.company || j.role; }); // skip fully empty blocks
+
+      var res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      var result = await res.json();
+
+      if(result.result === 'success'){
+        setStatus('✓ Submitted! We\\'ll be in touch shortly.', 'success');
+        form.reset();
+        jobsContainer.innerHTML = '';
+        jobCount = 0;
+        addJobBlock();
+        document.getElementById('passportFileList').innerHTML = '';
+        document.getElementById('certsFileList').innerHTML = '';
+        syncToggle();
+      } else {
+        throw new Error(result.message || 'Submission failed.');
+      }
+
+    } catch(err){
+      setStatus('Error: ' + err.message, 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit My Details';
+    }
+  });
+</script>
+
+</body>
+</html>
