@@ -422,7 +422,45 @@
     });
   }
   wireDrop('passportDrop','passportPhoto','passportFileList');
-  wireDrop('certsDrop','certificates','certsFileList');
+
+  // ---- certificates: accumulate across multiple tap-and-select sessions ----
+  var certsFiles = [];
+  var certsDrop = document.getElementById('certsDrop');
+  var certsInput = document.getElementById('certificates');
+  var certsFileList = document.getElementById('certsFileList');
+
+  certsDrop.addEventListener('click', function(){ certsInput.click(); });
+
+  certsInput.addEventListener('change', function(){
+    Array.prototype.forEach.call(certsInput.files, function(f){
+      var exists = certsFiles.some(function(x){ return x.name === f.name && x.size === f.size; });
+      if(!exists) certsFiles.push(f);
+    });
+    certsInput.value = '';
+    renderCertsList();
+  });
+
+  function renderCertsList(){
+    certsFileList.innerHTML = '';
+    certsFiles.forEach(function(f, idx){
+      var mb = (f.size / (1024*1024)).toFixed(2);
+      var tooBig = f.size > MAX_FILE_MB*1024*1024;
+      var div = document.createElement('div');
+      div.textContent = f.name + ' (' + mb + ' MB)' + (tooBig ? ' — too large!' : '') + ' ';
+      if(tooBig) div.style.color = '#c0392b';
+      var removeBtn = document.createElement('a');
+      removeBtn.href = '#';
+      removeBtn.textContent = '[remove]';
+      removeBtn.style.marginLeft = '6px';
+      removeBtn.addEventListener('click', function(ev){
+        ev.preventDefault();
+        certsFiles.splice(idx, 1);
+        renderCertsList();
+      });
+      div.appendChild(removeBtn);
+      certsFileList.appendChild(div);
+    });
+  }
 
   // ---- repeatable previous jobs ----
   function relabelJobs(){
@@ -645,13 +683,12 @@
         payload.passportPhoto = await fileToBase64(passportInput.files[0]);
       }
 
-      var certsInput = document.getElementById('certificates');
-      if(certsInput.files.length){
+      if(certsFiles.length){
         var certPromises = [];
-        for(var i=0;i<certsInput.files.length;i++){
-          if(certsInput.files[i].size > MAX_FILE_MB*1024*1024) throw new Error('"' + certsInput.files[i].name + '" is too large (max ' + MAX_FILE_MB + 'MB).');
-          certPromises.push(fileToBase64(certsInput.files[i]));
-        }
+        certsFiles.forEach(function(f){
+          if(f.size > MAX_FILE_MB*1024*1024) throw new Error('"' + f.name + '" is too large (max ' + MAX_FILE_MB + 'MB).');
+          certPromises.push(fileToBase64(f));
+        });
         payload.certificates = await Promise.all(certPromises);
       }
 
@@ -680,7 +717,8 @@
         jobCount = 0;
         addJobBlock(); addJobBlock(); addJobBlock();
         document.getElementById('passportFileList').innerHTML = '';
-        document.getElementById('certsFileList').innerHTML = '';
+        certsFiles = [];
+        renderCertsList();
         syncToggle();
         updateProgress();
       } else {
